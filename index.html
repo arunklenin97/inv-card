@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Will you be my Valentine?</title>
 
-  <!-- Confetti -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <!-- LOCAL Confetti (no external link) -->
+  <script src="confetti.browser.min.js"></script>
 
   <style>
     :root {
@@ -189,8 +189,6 @@
     <section class="result" id="result">
       <h2>Saranghae Srikuttyyyy! 💕🫰</h2>
       <p>You said YES! ❤️<br>Now you are officially my Valentine forever.</p>
-      
-      <!-- LOCAL GIF -->
       <img class="fireworks" src="giphy.gif" alt="Fireworks">
     </section>
   </main>
@@ -237,8 +235,33 @@
       yesBtn.style.transform = `translateY(-50%) scale(${yesScale})`;
     }
     function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
-    function moveNo(px, py) { /* same as before */ }
-    zone.addEventListener("pointermove", e => { /* same as before */ });
+
+    function moveNo(px, py) {
+      const z = zone.getBoundingClientRect();
+      const b = noBtn.getBoundingClientRect();
+      let dx = (b.left + b.width / 2) - px;
+      let dy = (b.top + b.height / 2) - py;
+      let mag = Math.hypot(dx, dy) || 1;
+      dx /= mag; dy /= mag;
+      let newLeft = (b.left - z.left) + dx * 150;
+      let newTop  = (b.top - z.top) + dy * 150;
+      newLeft = clamp(newLeft, 0, z.width - b.width);
+      newTop  = clamp(newTop, 0, z.height - b.height);
+      noBtn.style.left = newLeft + "px";
+      noBtn.style.top = newTop + "px";
+      noBtn.style.transform = "none";
+      growYes();
+    }
+
+    zone.addEventListener("pointermove", e => {
+      const b = noBtn.getBoundingClientRect();
+      const d = Math.hypot(
+        (b.left + b.width / 2) - e.clientX,
+        (b.top + b.height / 2) - e.clientY
+      );
+      if (d < 140) moveNo(e.clientX, e.clientY);
+    });
+
     noBtn.addEventListener("click", e => e.preventDefault());
 
     /* YES CLICK */
